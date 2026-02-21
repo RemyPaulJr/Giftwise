@@ -1,5 +1,5 @@
 # Giftwise
-GiftWise is a AI gift recommender.
+GiftWise is an AI-powered gift recommendation platform that solves a problem everyone has — finding a meaningful, personalized gift without spending hours searching.
 
 ## Tech Stack
 | Component | Technology | Description |
