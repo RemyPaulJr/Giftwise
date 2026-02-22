@@ -1,7 +1,5 @@
 # Giftwise
-GiftWise is an AI-powered gift recommendation app. Enter a recipient's 
-hobbies, interests, and budget — get personalized gift ideas generated 
-by OpenAI. Save lists privately, rate suggestions, and regenerate ideas.
+GiftWise is an AI-powered gift recommendation platform that solves a problem everyone has — finding a meaningful, personalized gift without spending hours searching.
 
 ## Tech Stack
 | Component | Technology | Description |
