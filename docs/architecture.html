@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GiftWise — Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #faf8f4;
+  --surface: #ffffff;
+  --border: #e8e0d0;
+  --accent: #c49a3c;
+  --accent-dim: #c49a3c20;
+  --ink: #1a1208;
+  --muted: #8a7a68;
+  --blue: #2563eb;
+  --green: #16a34a;
+  --purple: #7c3aed;
+  --red: #dc2626;
+  --orange: #ea580c;
+}
+
+body {
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  padding: 40px 32px 60px;
+  color: var(--ink);
+  min-width: 1000px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+
+.header-left h1 { font-size: 1.3rem; font-weight: 700; }
+.header-left p { font-size: 0.72rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.06em; text-transform: uppercase; }
+.header-badge { font-size: 0.7rem; font-weight: 600; background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); padding: 4px 12px; border-radius: 20px; }
+
+.diagram {
+  display: grid;
+  grid-template-columns: 90px 1fr 170px;
+  gap: 16px;
+  align-items: start;
+}
+
+/* CLIENT */
+.client-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 56px;
+  gap: 6px;
+}
+
+.client-box {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  width: 72px;
+}
+
+.client-icon { font-size: 1.6rem; }
+.client-label { font-size: 0.65rem; font-weight: 600; margin-top: 4px; }
+
+.v-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin-top: 4px;
+}
+
+.v-line { width: 1px; height: 18px; background: var(--border); }
+.v-label { font-size: 0.55rem; color: var(--muted); writing-mode: vertical-rl; transform: rotate(180deg); padding: 4px 0; }
+
+/* ZONE */
+.zone {
+  border-radius: 10px;
+  padding: 16px;
+  position: relative;
+  margin-top: 4px;
+}
+
+.zone-label {
+  position: absolute;
+  top: -9px;
+  left: 14px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 1px 10px;
+  border-radius: 20px;
+  background: var(--bg);
+}
+
+.zone.z-frontend { border: 2px dashed var(--blue); background: #dbeafe18; }
+.zone.z-frontend .zone-label { color: var(--blue); border: 1px solid var(--blue); }
+
+.zone.z-backend { border: 2px dashed var(--green); background: #dcfce718; }
+.zone.z-backend .zone-label { color: var(--green); border: 1px solid var(--green); }
+
+.zone.z-ai { border: 2px dashed var(--purple); background: #ede9fe18; }
+.zone.z-ai .zone-label { color: var(--purple); border: 1px solid var(--purple); }
+
+.zone.z-data { border: 2px dashed var(--accent); background: var(--accent-dim); }
+.zone.z-data .zone-label { color: var(--accent); border: 1px solid var(--accent); }
+
+.zone.z-infra { border: 2px dashed var(--red); background: #fee2e218; }
+.zone.z-infra .zone-label { color: var(--red); border: 1px solid var(--red); }
+
+.zone.z-ext { border: 2px dashed var(--orange); background: #ffedd518; }
+.zone.z-ext .zone-label { color: var(--orange); border: 1px solid var(--orange); }
+
+.zone.z-cicd { border: 2px dashed #64748b; background: #f1f5f918; }
+.zone.z-cicd .zone-label { color: #64748b; border: 1px solid #64748b; }
+
+/* NODE CARDS */
+.nodes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+
+.node {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 90px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  text-align: center;
+  transition: box-shadow 0.15s;
+}
+
+.node:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+.node-icon { font-size: 1.5rem; }
+.node-name { font-size: 0.72rem; font-weight: 700; color: var(--ink); }
+.node-tech { font-size: 0.6rem; color: var(--muted); }
+
+.node-row {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  width: 100%;
+}
+
+.node-row-icon { font-size: 1.3rem; flex-shrink: 0; }
+.node-row-name { font-size: 0.72rem; font-weight: 700; color: var(--ink); }
+.node-row-tech { font-size: 0.6rem; color: var(--muted); margin-top: 2px; }
+
+/* CONNECTOR */
+.connector {
+  display: flex;
+  align-items: center;
+  height: 20px;
+  position: relative;
+  margin: 2px 0;
+}
+
+.connector::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0; right: 0;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--border) 0, var(--border) 5px, transparent 5px, transparent 10px);
+}
+
+.connector-label {
+  background: var(--bg);
+  padding: 0 8px;
+  font-size: 0.58rem;
+  color: var(--muted);
+  position: relative;
+  z-index: 1;
+  white-space: nowrap;
+  margin: 0 auto;
+}
+
+/* MID + BOTTOM GRIDS */
+.mid-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.bot-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+/* AWS SIDEBAR */
+.aws-col { display: flex; flex-direction: column; gap: 10px; padding-top: 56px; }
+
+.aws-zone {
+  border: 2px dashed var(--orange);
+  background: #ffedd518;
+  border-radius: 10px;
+  padding: 14px 12px;
+  position: relative;
+}
+
+.aws-zone-label {
+  position: absolute;
+  top: -9px;
+  left: 12px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 1px 10px;
+  border-radius: 20px;
+  background: var(--bg);
+  color: var(--orange);
+  border: 1px solid var(--orange);
+}
+
+.aws-nodes { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+
+.aws-node {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.aws-node-icon { font-size: 1.1rem; }
+.aws-node-name { font-size: 0.68rem; font-weight: 700; }
+.aws-node-sub { font-size: 0.57rem; color: var(--muted); }
+
+/* LEGEND */
+.legend {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.legend-title { width: 100%; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 0.68rem; color: var(--muted); }
+.legend-dot { width: 12px; height: 12px; border-radius: 3px; border: 2px dashed; flex-shrink: 0; }
+
+.num-badge {
+  position: absolute;
+  top: -9px;
+  right: 12px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: white;
+  font-size: 0.58rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>GiftWise — System Architecture</h1>
+    <p>MVP v1.0 · Full Stack Application</p>
+  </div>
+  <div class="header-badge">AWS Hosted</div>
+</header>
+
+<div class="diagram">
+
+  <!-- CLIENT COLUMN -->
+  <div class="client-col">
+    <div class="client-box">
+      <div class="client-icon">🖥️</div>
+      <div class="client-label">Client</div>
+    </div>
+    <div class="v-connector">
+      <div class="v-line"></div>
+      <div class="v-label">HTTPS</div>
+      <div class="v-line"></div>
+    </div>
+  </div>
+
+  <!-- MAIN COLUMN -->
+  <div style="display:flex;flex-direction:column;gap:10px;">
+
+    <!-- FRONTEND -->
+    <div class="zone z-frontend">
+      <span class="zone-label">Frontend</span>
+      <span class="num-badge">1</span>
+      <div class="nodes">
+        <div class="node">
+          <div class="node-icon">⚛️</div>
+          <div class="node-name">React SPA</div>
+          <div class="node-tech">TypeScript · Vite</div>
+        </div>
+        <div class="node">
+          <div class="node-icon">🔐</div>
+          <div class="node-name">Auth State</div>
+          <div class="node-tech">JWT in memory</div>
+        </div>
+        <div class="node">
+          <div class="node-icon">☁️</div>
+          <div class="node-name">S3 + CloudFront</div>
+          <div class="node-tech">Static · CDN</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"><span class="connector-label">REST / JSON · Bearer Token</span></div>
+
+    <!-- API GATEWAY -->
+    <div class="zone z-backend">
+      <span class="zone-label">API Gateway</span>
+      <span class="num-badge">2</span>
+      <div class="nodes">
+        <div class="node">
+          <div class="node-icon">🐹</div>
+          <div class="node-name">Go API</div>
+          <div class="node-tech">Chi Router</div>
+        </div>
+        <div class="node">
+          <div class="node-icon">🛡️</div>
+          <div class="node-name">JWT Middleware</div>
+          <div class="node-tech">Auth · bcrypt</div>
+        </div>
+        <div class="node">
+          <div class="node-icon">⚙️</div>
+          <div class="node-name">Handlers</div>
+          <div class="node-tech">Business logic</div>
+        </div>
+        <div class="node">
+          <div class="node-icon">🖥️</div>
+          <div class="node-name">EC2 / ECS</div>
+          <div class="node-tech">Docker · AWS</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="connector"><span class="connector-label">Internal HTTP · JSON</span></div>
+      <div class="connector"><span class="connector-label">pgx · SQL</span></div>
+    </div>
+
+    <!-- AI + DB -->
+    <div class="mid-grid">
+
+      <div class="zone z-ai">
+        <span class="zone-label">AI Service</span>
+        <span class="num-badge">3</span>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+          <div class="node-row">
+            <div class="node-row-icon">🐍</div>
+            <div>
+              <div class="node-row-name">FastAPI Service</div>
+              <div class="node-row-tech">Python · POST /recommend</div>
+            </div>
+          </div>
+          <div class="node-row">
+            <div class="node-row-icon">🤖</div>
+            <div>
+              <div class="node-row-name">Prompt Engine</div>
+              <div class="node-row-tech">OpenAI SDK · gpt-4o-mini</div>
+            </div>
+          </div>
+          <div class="node-row">
+            <div class="node-row-icon">🔒</div>
+            <div>
+              <div class="node-row-name">Internal Only</div>
+              <div class="node-row-tech">Not public · Same VPC</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="zone z-data">
+        <span class="zone-label">Database</span>
+        <span class="num-badge">4</span>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+          <div class="node-row">
+            <div class="node-row-icon">🐘</div>
+            <div>
+              <div class="node-row-name">PostgreSQL</div>
+              <div class="node-row-tech">AWS RDS · Private subnet</div>
+            </div>
+          </div>
+          <div class="node-row">
+            <div class="node-row-icon">📋</div>
+            <div>
+              <div class="node-row-name">5 Tables</div>
+              <div class="node-row-tech">users · recipients · gift_lists · suggestions · feedback</div>
+            </div>
+          </div>
+          <div class="node-row">
+            <div class="node-row-icon">🔄</div>
+            <div>
+              <div class="node-row-name">Migrations</div>
+              <div class="node-row-tech">golang-migrate · versioned</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="connector"><span class="connector-label">HTTPS · OpenAI API</span></div>
+
+    <!-- BOTTOM ROW -->
+    <div class="bot-grid">
+
+      <div class="zone z-infra">
+        <span class="zone-label">Secrets</span>
+        <span class="num-badge">5</span>
+        <div style="margin-top:8px;">
+          <div class="node-row">
+            <div class="node-row-icon">🔑</div>
+            <div>
+              <div class="node-row-name">Secrets Manager</div>
+              <div class="node-row-tech">JWT · OpenAI key · DB creds</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="zone z-ext">
+        <span class="zone-label">External</span>
+        <span class="num-badge">6</span>
+        <div style="margin-top:8px;">
+          <div class="node-row">
+            <div class="node-row-icon">🧠</div>
+            <div>
+              <div class="node-row-name">OpenAI API</div>
+              <div class="node-row-tech">gpt-4o-mini · JSON mode</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="zone z-cicd">
+        <span class="zone-label">CI / CD</span>
+        <span class="num-badge">7</span>
+        <div style="margin-top:8px;">
+          <div class="node-row">
+            <div class="node-row-icon">🔁</div>
+            <div>
+              <div class="node-row-name">GitHub Actions</div>
+              <div class="node-row-tech">Build → ECR → ECS · S3</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- AWS SIDEBAR -->
+  <div class="aws-col">
+    <div class="aws-zone">
+      <span class="aws-zone-label">AWS Services</span>
+      <div class="aws-nodes">
+        <div class="aws-node">
+          <div class="aws-node-icon">🪣</div>
+          <div><div class="aws-node-name">S3</div><div class="aws-node-sub">Frontend hosting</div></div>
+        </div>
+        <div class="aws-node">
+          <div class="aws-node-icon">🌐</div>
+          <div><div class="aws-node-name">CloudFront</div><div class="aws-node-sub">CDN</div></div>
+        </div>
+        <div class="aws-node">
+          <div class="aws-node-icon">🖥️</div>
+          <div><div class="aws-node-name">EC2 / ECS</div><div class="aws-node-sub">Compute</div></div>
+        </div>
+        <div class="aws-node">
+          <div class="aws-node-icon">🗄️</div>
+          <div><div class="aws-node-name">RDS</div><div class="aws-node-sub">PostgreSQL</div></div>
+        </div>
+        <div class="aws-node">
+          <div class="aws-node-icon">🔒</div>
+          <div><div class="aws-node-name">VPC</div><div class="aws-node-sub">Private network</div></div>
+        </div>
+        <div class="aws-node">
+          <div class="aws-node-icon">📦</div>
+          <div><div class="aws-node-name">ECR</div><div class="aws-node-sub">Container registry</div></div>
+        </div>
+        <div class="aws-node">
+          <div class="aws-node-icon">🔑</div>
+          <div><div class="aws-node-name">Secrets Manager</div><div class="aws-node-sub">Credentials</div></div>
+        </div>
+        <div class="aws-node">
+          <div class="aws-node-icon">👤</div>
+          <div><div class="aws-node-name">IAM</div><div class="aws-node-sub">Access control</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-title">Zone Key</div>
+  <div class="legend-item"><div class="legend-dot" style="border-color:var(--blue);"></div> Frontend (TypeScript)</div>
+  <div class="legend-item"><div class="legend-dot" style="border-color:var(--green);"></div> API Gateway (Go)</div>
+  <div class="legend-item"><div class="legend-dot" style="border-color:var(--purple);"></div> AI Service (Python)</div>
+  <div class="legend-item"><div class="legend-dot" style="border-color:var(--accent);"></div> Database (PostgreSQL)</div>
+  <div class="legend-item"><div class="legend-dot" style="border-color:var(--red);"></div> Secrets (AWS)</div>
+  <div class="legend-item"><div class="legend-dot" style="border-color:var(--orange);"></div> External / AWS Services</div>
+  <div class="legend-item"><div class="legend-dot" style="border-color:#64748b;"></div> CI/CD</div>
+</div>
+
+<div style="text-align:right;margin-top:14px;font-size:0.62rem;color:var(--muted);letter-spacing:0.06em;">GIFTWISE · FULL STACK APPLICATION</div>
+
+</body>
+</html>
