@@ -1,5 +1,6 @@
 package main
 
+<<<<<<< HEAD
 import (
 	"net/http"
 	"time"
@@ -32,5 +33,8 @@ func main() {
 }
 
 func registerUser(w http.ResponseWriter, r *http.Request) {
+=======
+func main() {
+>>>>>>> main
 
 }

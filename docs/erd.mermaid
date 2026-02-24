@@ -1,0 +1,50 @@
+---
+title: GiftWise — Entity Relationship Diagram (MVP v1.0)
+---
+erDiagram
+    users {
+        UUID id PK
+        VARCHAR_255 email UK
+        VARCHAR_255 password_hash
+        TIMESTAMPTZ created_at
+    }
+
+    recipients {
+        SERIAL id PK
+        UUID user_id FK
+        VARCHAR_255 recipient_name
+        TEXT hobbies
+        TEXT interests
+        ENUM budget
+        TIMESTAMPTZ created_at
+    }
+
+    gift_lists {
+        SERIAL id PK
+        INTEGER recipient_id FK
+        TIMESTAMPTZ created_at
+    }
+
+    suggestions {
+        SERIAL id PK
+        INTEGER gift_list_id FK
+        VARCHAR_255 title
+        TEXT description
+        TEXT reason
+        TIMESTAMPTZ created_at
+    }
+
+    feedback {
+        SERIAL id PK
+        INTEGER suggestion_id FK
+        UUID user_id FK
+        SMALLINT rating
+        TEXT comment
+        TIMESTAMPTZ created_at
+    }
+
+    users ||--o{ recipients : "has many"
+    users ||--o{ feedback : "leaves many"
+    recipients ||--o{ gift_lists : "has many"
+    gift_lists ||--o{ suggestions : "contains many"
+    suggestions ||--o{ feedback : "receives many"
