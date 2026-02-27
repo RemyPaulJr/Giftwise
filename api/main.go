@@ -1,7 +1,7 @@
 package main
 
-<<<<<<< HEAD
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -9,18 +9,12 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-// Struct for receiving email and password input from user
-type RegisterRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 // User struct for passing to database
 type User struct {
-	ID           string    `json:"id"`
-	Email        string    `json:"email"`
-	PasswordHash string    `json:"-"`
-	CreatedAt    time.Time `json:"created_at"`
+	ID            string `json:"id"`
+	Email         string `json:"email"`
+	Password_Hash string `json:"password_hash"`
+	Created_At    time.Time
 }
 
 func main() {
@@ -28,13 +22,17 @@ func main() {
 	r := chi.NewRouter()
 	// Applies middleware to every route on this router. auto logs every incoming request
 	r.Use(middleware.Logger)
+	// Connect to database and create app instance
+	app, err := startDB()
+	if err != nil {
+		log.Print("Failed to start app server: ", err)
+		return
+	}
 
-	r.Post("/auth/register", registerUser)
-}
+	r.Post("/auth/register", app.registerUser)
+	r.Post("/auth/login", app.loginUser)
 
-func registerUser(w http.ResponseWriter, r *http.Request) {
-=======
-func main() {
->>>>>>> main
+	log.Print("Starting server on :8080")
+	http.ListenAndServe(":8080", r)
 
 }
