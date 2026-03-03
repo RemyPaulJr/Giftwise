@@ -6,7 +6,10 @@ import (
 	"log"
 	"net/http"
 	"net/mail"
+	"os"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -16,6 +19,10 @@ import (
 type RegisterRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type LoginResponse struct {
+	Token string `json:"token"`
 }
 
 // RegisterResponse struct to send response back to client in JSON
@@ -102,8 +109,10 @@ func (a *App) registerUser(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) loginUser(w http.ResponseWriter, r *http.Request) {
 
+	var loginResponse LoginResponse
 	var request RegisterRequest
 	var password string
+	var id string
 
 	decode := json.NewDecoder(r.Body)
 	err := decode.Decode(&request)
@@ -161,7 +170,35 @@ func (a *App) loginUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// If email exists in DB and password hash from DB matches the password they entered hash, then we write a success response back to user
-	writeJSON(w, http.StatusAccepted, "Login successful")
+	// Query db to see grab the user's id if they were successfully authenticated
+	userID := a.db.QueryRow(r.Context(), "SELECT id FROM users WHERE email = $1", request.Email)
+	if err = userID.Scan(&id); err != nil {
+		checkError(w, http.StatusInternalServerError, "Something went wrong, please try again.")
+		log.Print("Error querying users table in Giftwise DB for id: ", err)
+		return
+	}
 
+	// If email exists in DB and password hash from DB matches the password they entered hash, then we Generate JWT and write token back
+	loginResponse.Token = generateJWT(id)
+	writeJSON(w, http.StatusAccepted, loginResponse)
+}
+
+func generateJWT(userID string) string {
+
+	mySigningKey := []byte(os.Getenv("JWT_SECRET"))
+
+	claims := &jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+		Issuer:    "Giftwise",
+		Subject:   userID,
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	ss, err := token.SignedString(mySigningKey)
+	if err != nil {
+		log.Print("Error generating JWT: ", err)
+	}
+
+	return ss
 }
